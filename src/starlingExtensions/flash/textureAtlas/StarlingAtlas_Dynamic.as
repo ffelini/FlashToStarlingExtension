@@ -6,6 +6,8 @@ import flash.display.DisplayObject;
 import flash.geom.Rectangle;
 import flash.utils.Dictionary;
 
+import haxePort.starlingExtensions.flash.movieclipConverter.AtlasDescriptor;
+
 import haxePort.starlingExtensions.flash.textureAtlas.ITextureAtlasDynamic;
 import haxePort.starlingExtensions.flash.textureAtlas.SubtextureRegion;
 
@@ -31,61 +33,58 @@ public class StarlingAtlas_Dynamic extends FlashAtlas_Dynamic
 			
 			initRenderTexture();
 			
-			//debug = debugAtlas = true; 
+			debug = debugAtlas = true;
 		}
 		protected var renderTexture:RenderTexture;
-		override public function resetDescriptor():void
+		override public function resetDescriptor():AtlasDescriptor
 		{
 			super.resetDescriptor();
-			maxSize = 256;
+			return descriptor;
 		}
 		protected function initRenderTexture():void
 		{
 			renderTexture = new RenderTexture(descriptor.bestWidth,descriptor.bestHeight,true,-1);
 			renderTexture.root.onRestore = onTextureRestore;
-			(atlas as TextureAtlas_Dynamic).texture = renderTexture;
-		}
-		override public function onAtlasIsFull(subtextureObj:flash.display.DisplayObject,subTextureName:String):void
-		{
-			continueOnFull = false;
-			if(subtextureObj.parent==this) subtextureObj.parent.removeChild(subtextureObj);
-			
-			subtextureStalingObj.removeFromParent();
-			if(requireUpdate) updateAtlas(true);
-			
-			if(onFullHandler!=null) Handlers.functionCall(onFullHandler,subtextureObj,subTextureName);
+			(descriptor.atlas as TextureAtlas_Dynamic).texture = renderTexture;
 		}
 		override public function addRegion(obj:flash.display.DisplayObject, name:String, _updateAtlas:Boolean=true, includeAllMovieClipFrames:Boolean=true,maxSizeRect:Rectangle=null,bmdProcessHandler:Function=null):SubtextureRegion
 		{
 			return super.addRegion(obj, name, true, includeAllMovieClipFrames,maxSizeRect,bmdProcessHandler);
 		}
 		protected var subtextureStalingObj:starling.display.DisplayObject;
-		override public function addSubTexture(obj:flash.display.DisplayObject, name:String=""):SubtextureRegion
+		override public function addSubTexture(descriptor:AtlasDescriptor, obj:flash.display.DisplayObject, name:String="",onAtlasIsFullCall:Boolean = true):SubtextureRegion
 		{
-			if(descriptor.isFull) return null;
-			
-			var subtexture:SubtextureRegion = super.addSubTexture(obj, name);
-			
-			if(descriptor.isFull && !continueOnFull) return subtexture;
-			
-			var objTexture:Texture = prepareRegionTexture(subtextureObj);
-			
-			if(objTexture)
-			{
-				subtextureStalingObj = new Image(objTexture);
-				
-				subtextureObjRect = subtextureObj.getBounds(this);
-				DisplayUtils.setBounds(subtextureStalingObj,subtextureObjRect);
-				
-				renderTexture.draw(subtextureStalingObj);
-				if(atlas is TextureAtlas_Dynamic) (atlas as TextureAtlas_Dynamic).concretTexture.base = renderTexture.base;
-				 
-				starlingRegionsByFlashInstance[subtextureObj] = subtextureStalingObj;
-				starlingAtlas.addChild(subtextureStalingObj);
-				
-				objTexture.dispose();		
-				
-				if(debugAtlas) drawAtlas(getAtlasToDrawRect()); 
+			var subtexture:SubtextureRegion = super.addSubTexture(descriptor, obj, name);
+			if(subtexture) {
+				var objTexture:Texture = prepareRegionTexture(subtextureObj);
+
+				if(objTexture)
+				{
+					subtextureStalingObj = new Image(objTexture);
+
+					var subtextureObjRect:Rectangle = subtextureObj.getBounds(this);
+					DisplayUtils.setBounds(subtextureStalingObj,subtextureObjRect);
+
+					renderTexture.draw(subtextureStalingObj);
+					if(descriptor.atlas is TextureAtlas_Dynamic) (descriptor.atlas as TextureAtlas_Dynamic).concretTexture.base = renderTexture.base;
+
+					starlingRegionsByFlashInstance[subtextureObj] = subtextureStalingObj;
+					starlingAtlas.addChild(subtextureStalingObj);
+
+					objTexture.dispose();
+
+					if(debugAtlas) drawAtlas(descriptor, getAtlasToDrawRect(descriptor));
+				}
+			} else {
+				if(subtextureObj.parent==this) subtextureObj.parent.removeChild(subtextureObj);
+
+				subtextureStalingObj.removeFromParent();
+				if(requireUpdate) updateAtlas(true);
+
+				if(onFullHandler!=null) {
+					var subTextureName:String = setCurentOject(obj);
+					Handlers.functionCall(onFullHandler,subtextureObj,subTextureName);
+				}
 			}
 			return subtexture;
 		}
@@ -130,7 +129,7 @@ public class StarlingAtlas_Dynamic extends FlashAtlas_Dynamic
 			initRenderTexture();
 			
 			renderTexture.draw(starlingAtlas);
-			if(atlas) (atlas as TextureAtlas_Dynamic).concretTexture.base = renderTexture.base;
+			if(descriptor.atlas) (descriptor.atlas as TextureAtlas_Dynamic).concretTexture.base = renderTexture.base;
 			
 			for(var flashObj:* in starlingRegionsByFlashInstance)
 			{
@@ -143,13 +142,13 @@ public class StarlingAtlas_Dynamic extends FlashAtlas_Dynamic
 		{
 			//super.updateAtlas(true);
 		}
-		override public function createTextureAtlass():haxePort.starlingExtensions.flash.textureAtlas.ITextureAtlasDynamic
+		override public function createTextureAtlass(descriptor:AtlasDescriptor):haxePort.starlingExtensions.flash.textureAtlas.ITextureAtlasDynamic
 		{
 			//if(atlas.texture==helpTexture) atlas.texture = renderTexture;
 			
-			if(debugAtlas) drawAtlas(getAtlasToDrawRect()); 
+			if(debugAtlas) drawAtlas(descriptor, getAtlasToDrawRect(descriptor));
 			
-			return atlas;
+			return descriptor.atlas;
 		}
 		
 	}

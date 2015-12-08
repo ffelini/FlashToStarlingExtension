@@ -8,6 +8,8 @@ import flash.utils.Dictionary;
 import flash.utils.getTimer;
 
 import haxePort.starlingExtensions.flash.textureAtlas.ITextureAtlasDynamic;
+
+import haxePort.starlingExtensions.flash.textureAtlas.ITextureAtlasDynamic;
 import haxePort.starlingExtensions.flash.textureAtlas.SubtextureRegion;
 import haxePort.starlingExtensions.flash.textureAtlas.TextureAtlasAbstract;
 
@@ -65,7 +67,7 @@ public class TextureAtlas_Dynamic extends TextureAtlas implements ITextureAtlasD
         return _textureScale;
     }
 
-    protected var subtextures:Dictionary;
+    protected var subtextures:Dictionary = new Dictionary();
 
     protected function haxeParseAtlas(atlas:TextureAtlasAbstract):void {
         atlas = atlas;

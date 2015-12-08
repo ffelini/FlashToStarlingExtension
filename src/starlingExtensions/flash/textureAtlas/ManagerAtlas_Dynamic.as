@@ -40,7 +40,7 @@ public class ManagerAtlas_Dynamic
 				if(!instances) instances = new Vector.<FlashAtlas_Dynamic>();
 				instances.push(curent);
 			}
-			if(curent.descriptor.isFull)
+			if(curent.isFull)
 			{
 				curent = null;
 				return getInstance(obj,instClass);

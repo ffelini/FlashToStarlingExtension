@@ -2,6 +2,8 @@ package feathersExtensions.themes
 {
 import flash.display.DisplayObjectContainer;
 
+import haxePort.starlingExtensions.flash.movieclipConverter.AtlasDescriptor;
+
 import starlingExtensions.flash.textureAtlas.FlashAtlas_Dynamic;
 import starlingExtensions.flash.textureAtlas.TextureAtlas_Dynamic;
 
@@ -12,10 +14,11 @@ public class FeathersThemeAtlas_Dynamic extends FlashAtlas_Dynamic
 			super();	
 			//debugAtlas = true;
 		}
-		override public function resetDescriptor():void
+		override public function resetDescriptor():AtlasDescriptor
 		{
 			super.resetDescriptor();
 			maxSize = 1024;
+			return descriptor;
 		}
 		public function addFlashContent(includeAllMovieClipFrames:Boolean=true,...containers):void
 		{
@@ -48,7 +51,7 @@ public class FeathersThemeAtlas_Dynamic extends FlashAtlas_Dynamic
 		}
 		public function get textureAtlas():TextureAtlas_Dynamic
 		{
-			return atlas ? atlas as TextureAtlas_Dynamic : getAtlas() as TextureAtlas_Dynamic;
+			return descriptor.atlas ? descriptor.atlas as TextureAtlas_Dynamic : getAtlas(descriptor) as TextureAtlas_Dynamic;
 		}
 	}
 }

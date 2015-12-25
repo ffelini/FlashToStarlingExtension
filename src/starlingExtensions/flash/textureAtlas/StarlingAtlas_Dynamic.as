@@ -30,10 +30,7 @@ public class StarlingAtlas_Dynamic extends FlashAtlas_Dynamic
 		{
 			super();
 			continueOnFull = false;
-			
 			initRenderTexture();
-			
-			debug = debugAtlas = true;
 		}
 		protected var renderTexture:RenderTexture;
 		override public function resetDescriptor():AtlasDescriptor
@@ -43,7 +40,7 @@ public class StarlingAtlas_Dynamic extends FlashAtlas_Dynamic
 		}
 		protected function initRenderTexture():void
 		{
-			renderTexture = new RenderTexture(descriptor.bestWidth,descriptor.bestHeight,true,-1);
+			renderTexture = new RenderTexture(descriptor.maximumWidth,descriptor.maximumHeight,true,-1);
 			renderTexture.root.onRestore = onTextureRestore;
 			(descriptor.atlas as TextureAtlas_Dynamic).texture = renderTexture;
 		}
@@ -54,8 +51,8 @@ public class StarlingAtlas_Dynamic extends FlashAtlas_Dynamic
 		protected var subtextureStalingObj:starling.display.DisplayObject;
 		override public function addSubTexture(descriptor:AtlasDescriptor, obj:flash.display.DisplayObject, name:String="",onAtlasIsFullCall:Boolean = true):SubtextureRegion
 		{
-			var subtexture:SubtextureRegion = super.addSubTexture(descriptor, obj, name);
-			if(subtexture) {
+			var subTexture:SubtextureRegion = super.addSubTexture(descriptor, obj, name);
+			if(subTexture) {
 				var objTexture:Texture = prepareRegionTexture(subtextureObj);
 
 				if(objTexture)
@@ -77,32 +74,29 @@ public class StarlingAtlas_Dynamic extends FlashAtlas_Dynamic
 				}
 			} else {
 				if(subtextureObj.parent==this) subtextureObj.parent.removeChild(subtextureObj);
-
 				subtextureStalingObj.removeFromParent();
+
 				if(requireUpdate) updateAtlas(true);
 
-				if(onFullHandler!=null) {
-					var subTextureName:String = setCurentOject(obj);
-					Handlers.functionCall(onFullHandler,subtextureObj,subTextureName);
-				}
+				Handlers.functionCall(onFullHandler,obj,name);
 			}
-			return subtexture;
+			return subTexture;
 		}
-		protected function prepareRegionTexture(subtextureFlashObj:flash.display.DisplayObject):Texture
+		protected function prepareRegionTexture(subTextureFlashObj:flash.display.DisplayObject):Texture
 		{
 			var bmd:BitmapData;
 			var objTexture:Texture;
 			
-			if(subtextureFlashObj is Bitmap) 
+			if(subTextureFlashObj is Bitmap)
 			{
-				bmd = (subtextureFlashObj as Bitmap).bitmapData;
+				bmd = (subTextureFlashObj as Bitmap).bitmapData;
 				
 				if(objTexture) objTexture.root.uploadBitmapData(bmd);
 				else objTexture = Texture.fromBitmapData(bmd,false,true,subtextureObj.width<bmd.width ? subtextureObj.width/bmd.width : 1);
 			}
 			else
 			{
-				bmd = Textures.rasterize(subtextureFlashObj,drawWithQuality ? drawQuality : "");
+				bmd = Textures.rasterize(subTextureFlashObj,drawWithQuality ? drawQuality : "");
 				
 				if(objTexture) objTexture.root.uploadBitmapData(bmd);
 				else objTexture = Texture.fromBitmapData(bmd,false,true);

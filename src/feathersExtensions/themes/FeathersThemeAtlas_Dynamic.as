@@ -17,7 +17,6 @@ public class FeathersThemeAtlas_Dynamic extends FlashAtlas_Dynamic
 		override public function resetDescriptor():AtlasDescriptor
 		{
 			super.resetDescriptor();
-			maxSize = 1024;
 			return descriptor;
 		}
 		public function addFlashContent(includeAllMovieClipFrames:Boolean=true,...containers):void

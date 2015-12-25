@@ -23,6 +23,8 @@ import flash.utils.Dictionary;
 import flash.utils.getQualifiedClassName;
 import flash.utils.getTimer;
 
+import haxePort.starlingExtensions.flash.movieclipConverter.AtlasDescriptor;
+
 import haxePort.starlingExtensions.flash.movieclipConverter.ConvertUtils;
 import haxePort.starlingExtensions.flash.movieclipConverter.FlashAtlas;
 import haxePort.starlingExtensions.flash.movieclipConverter.FlashDisplay_Converter;
@@ -226,7 +228,11 @@ import utils.log;
 			
 			if(useSmartScreenQuality) calculateScreenQuality();
 		}
-		public function convertSprite(sprite:flash.display.DisplayObjectContainer,spClass:Class):IFlashSpriteMirror
+
+		public function onDescriptorReset(descriptor:AtlasDescriptor):void {
+		}
+
+	public function convertSprite(sprite:flash.display.DisplayObjectContainer,spClass:Class):IFlashSpriteMirror
 		{
 			var result:IFlashSpriteMirror;
 			if(FlashDisplay_Converter.isFlashMovieClip(sprite))
@@ -725,7 +731,7 @@ import utils.log;
 			if(visible && mirror && !_descriptor.created)
 			{
 				converter.convert(mirror,convertDescriptor,this,AdvancedSprite.coordinateSystemRect,Starling.current.profile==Context3DProfile.BASELINE_EXTENDED);
-				if(converter.shareAtlases && sharedMirrors.indexOf(this)<0) sharedMirrors.push(this);
+				if(converter.isSharingAtlasesRegions() && sharedMirrors.indexOf(this)<0) sharedMirrors.push(this);
 			}
 
 			if(creationRenderCounter>1) activate(visible); 

@@ -16,6 +16,8 @@ import haxePort.starlingExtensions.flash.movieclipConverter.FlashAtlas;
 import haxePort.starlingExtensions.flash.textureAtlas.ITextureAtlasDynamic;
 import haxePort.starlingExtensions.flash.textureAtlas.SubtextureRegion;
 
+import managers.Handlers;
+
 import starling.textures.Texture;
 import starling.utils.RectangleUtil;
 import starling.utils.ScaleMode;
@@ -32,6 +34,9 @@ import starlingExtensions.utils.DisplayUtils;
 	{
 		private var _isFull:Boolean = false;
 
+		private var maxSize:Number = 1024;
+		public var onFullHandler:Function;
+
 		public function FlashAtlas_Dynamic()
 		{
 			FlashAtlas.textureFromBmdFunc = TextureUtils.textureFromBmd;
@@ -41,18 +46,25 @@ import starlingExtensions.utils.DisplayUtils;
 
 			super();
 
+			resetDescriptor();
 			//debug = debugAtlas = true;
 		}
-		protected var maxSize:int = 512;
+
+		override public function getMaximumWidth():int {
+			return maxSize;
+		}
+
+		override public function getMaximumHeight():int {
+			return maxSize;
+		}
 
 		override public function resetDescriptor():AtlasDescriptor
 		{
 			super.resetDescriptor();
 			descriptor.smartSizeIncrease = false;
-			descriptor.bestHeight = descriptor.bestWidth = descriptor.maximumWidth = descriptor.maximumHeight =descriptor.maxRect.width = descriptor.maxRect.height = maxSize;
             return descriptor;
 		}
-		override public function checkSubtexture(obj:DisplayObject, name:String="",descriptors:Array = null):SubtextureRegion
+		override public function checkSubtexture(obj:DisplayObject, name:String="",descriptors:Array = null):AtlasDescriptor
 		{
 			return null;
 		}
@@ -65,6 +77,7 @@ import starlingExtensions.utils.DisplayUtils;
                 if(subtextureObj.parent==this) subtextureObj.parent.removeChild(subtextureObj);
                 if(requireUpdate) updateAtlas(true);
 				_isFull = true;
+				Handlers.call(onFullHandler, obj, name);
             }
 			return subTexture;
 		}
@@ -127,7 +140,7 @@ import starlingExtensions.utils.DisplayUtils;
 
 			if(includeAllMovieClipFrames && obj is MovieClip && (obj as MovieClip).totalFrames>1)
 			{
-				addMovieClip(descriptor, obj as MovieClip);
+				addMovieClip(descriptor, obj as MovieClip, false);
 				return null;
 			}
 			if(!_updateAtlas)
@@ -182,7 +195,7 @@ import starlingExtensions.utils.DisplayUtils;
 			var t:Texture = getSubtexture(objName,region,frame,extrusionFactor) as Texture;
 			return t;
 		}
-		override public function addMovieClip(descriptor:AtlasDescriptor, mc:MovieClip):void
+		override public function addMovieClip(descriptor:AtlasDescriptor, mc:MovieClip, includeAllFrames:Boolean):void
 		{
 			var _updateAtlas:Boolean = autoUpdateAtlas;
 			var _autoUpdateDelay:Number = autoUpdateDelay;
@@ -190,7 +203,7 @@ import starlingExtensions.utils.DisplayUtils;
 			autoUpdateDelay = 0;
 			autoUpdateAtlas = false;
 
-			super.addMovieClip(descriptor, mc);
+			super.addMovieClip(descriptor, mc, includeAllFrames);
 			if(_updateAtlas) updateAtlas();
 
 			autoUpdateAtlas = _updateAtlas;

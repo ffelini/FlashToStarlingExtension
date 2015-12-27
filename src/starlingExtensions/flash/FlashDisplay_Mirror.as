@@ -18,6 +18,7 @@ import flash.display.SimpleButton;
 import flash.display3D.Context3DProfile;
 import flash.geom.Rectangle;
 import flash.system.Capabilities;
+import flash.text.TextField;
 import flash.text.TextFormat;
 import flash.utils.ByteArray;
 import flash.utils.Dictionary;
@@ -216,7 +217,6 @@ import utils.log;
 			converter.removeGaps = smallestSideSize>=relativeRect.width/2.5;
 		}
 		public var converter:FlashDisplay_Converter;		
-		public var convertDescriptor:ConvertDescriptor;
 		protected function setupConverter():void
 		{
 			FlashAtlas.textureFromBmdFunc = TextureUtils.textureFromBmd;
@@ -225,15 +225,18 @@ import utils.log;
 			FlashAtlas.saveAtlasPngFunc = TextureUtils.saveAtlasPng;
 			
 			converter = new FlashDisplay_Converter();
-			convertDescriptor = new ConvertDescriptor();
-			
+			converter.convertDescriptor = new ConvertDescriptor();
 			if(useSmartScreenQuality) calculateScreenQuality();
+		}
+
+		public function get convertDescriptor():ConvertDescriptor {
+			return converter.convertDescriptor as ConvertDescriptor;
 		}
 
 		public function onDescriptorReset(descriptor:AtlasDescriptor):void {
 		}
 
-	public function convertSprite(sprite:flash.display.DisplayObjectContainer,spClass:Class):IFlashSpriteMirror
+		public function convertSprite(sprite:flash.display.DisplayObjectContainer,spClass:Class):IFlashSpriteMirror
 		{
 			var result:IFlashSpriteMirror;
 			if(FlashDisplay_Converter.isFlashMovieClip(sprite))
@@ -242,7 +245,8 @@ import utils.log;
 				(sprite as MovieClip).stop();
 			}
 			else result = spClass!=null ? new spClass(sprite,this) :  new FlashSprite_Mirror(sprite,this);
-			
+
+			storeInstance(result, sprite);
 			return result;
 		}	
 		public function storeInstance(instance:*, _mirror:flash.display.DisplayObject,mirrorRect:Rectangle=null):void
@@ -253,7 +257,6 @@ import utils.log;
 			registerMirror(instance,_mirror);
 			setupByMirror(instance as starling.display.DisplayObject, _mirror,false,mirrorRect);
 		}
-		protected var detailedRegistration:Boolean = false;
 		protected var registerInstancesByClass:Boolean = false;
 		protected var mirrors:Dictionary = new Dictionary();
 		public function registerMirror(instance:*, _mirror:flash.display.DisplayObject):void
@@ -346,7 +349,7 @@ import utils.log;
 		{
 			return _batchTextFields;
 		}
-		public function onCreateChildrenComplete():void
+		public function onChildrenCreationComplete():void
 		{
 			var t:Number = getTimer();
 			if(autoUpdateLayoutData && !defaultState.created) updateLayoutData();
@@ -355,24 +358,18 @@ import utils.log;
 			if(!_descriptor.created) batchTextFields = _batchTextFields;
 			_descriptor.created = true;
 		}
-		public function createChild(flashChild:flash.display.DisplayObject):void
+		public function createChild(flashChild:flash.display.DisplayObject, childClass:Class):void
 		{
 			var resultObj:starling.display.DisplayObject;
-			var childClass:Class;
 			var downSubtext:SubtextureRegion;
 			var upSubtext:SubtextureRegion;
 			var t:Texture;
 			var downT:Texture;
 			var upT:Texture;
 
-			var mirrorRect:Rectangle=null;
 			var subTextures:Vector.<SubtextureRegion> = _descriptor.getConf(flashChild) as Vector.<SubtextureRegion>;
 			var subTexture:SubtextureRegion = _descriptor.getConf(flashChild) is SubtextureRegion ? _descriptor.getConf(flashChild) : (subTextures ? subTextures[0] : null);
 			var atlas:TextureAtlasAbstract=null;
-			var _parent:Sprite = getMirror(flashChild.parent);
-			var _mirrorIndex:int = flashChild.parent ? flashChild.parent.getChildIndex(flashChild) : -1;
-
-			childClass = convertDescriptor.getInstanceMirrorClass(flashChild);
 
 			// checking if subTextures frameLabels matches to an button
 			if (subTextures && subTextures.length == 2)
@@ -405,15 +402,8 @@ import utils.log;
 			else if (flashChild is flash.text.TextField)
 			{
 				var field:flash.text.TextField = flashChild as flash.text.TextField;
-				var tf:TextFormat = field.defaultTextFormat;
-
-				resultObj = childClass ? new childClass(field.width, field.height, field.text, tf.font, int(tf.size), uint(tf.color), Boolean(tf.bold)) :
-					new SmartTextField(field.width, field.height, field.text, BITMAP_FONT ? BITMAP_FONT.name : tf.font, int(tf.size), uint(tf.color), Boolean(tf.bold));
-
-				(resultObj as TextField).autoScale = true;
-				(resultObj as TextField).hAlign = tf.align;
-				(resultObj as TextField).vAlign = VAlign.CENTER;
-				resultObj.touchable = false;
+				createTextField(field, childClass);
+				return;
 			}
 			else 
 			{
@@ -422,7 +412,7 @@ import utils.log;
 				
 				if(_mirrorType==ConvertUtils.TYPE_PRIMITIVE)
 				{
-					var extrusion:Number = FlashDisplay_Converter.getFlashObjField(flashChild,"extrusionFactor");
+					var extrusion:Number = FlashDisplay_Converter.getFlashObjField(flashChild,ConvertUtils.FIELD_EXTRUSION_FACTOR);
 					extrusion = !isNaN(extrusion) || extrusion<100 ? extrusion : 100;
 					t = TextureAtlas_Dynamic.extrudeTexture(t,null,null,extrusion); 
 				}
@@ -450,8 +440,8 @@ import utils.log;
 						var quadAlpha:Number = FlashDisplay_Converter.getFlashObjField(flashChild,"quadAlpha");
 						if(isNaN(quadAlpha)) quadAlpha = 1;
 						
-						resultObj = new Quad(100,100,_color);
-						resultObj.alpha = quadAlpha;
+						createQuad(flashChild, childClass, _color, quadAlpha);
+						return;
 					}
 					else
 					{
@@ -464,16 +454,59 @@ import utils.log;
 			}
 			if (!resultObj) return;
 			
-			if(!resultObj.parent)
-			{					
-				_parent.addChildAt(resultObj,_mirrorIndex);
-				
-				ObjUtil.registerInstance(_parent,resultObj);
-				
-				if(converter.isEconomicButton(flashChild as MovieClip) && !(resultObj.parent is FlashLabelButton)) DecoratorManger.decorate(Decorator_Button,resultObj,true);
-			}
-			storeInstance(resultObj,flashChild,mirrorRect);
+			onChildCreated(flashChild, resultObj);
 		}
+	public function onChildCreated(flashChild:flash.display.DisplayObject, resultObj:starling.display.DisplayObject) {
+		if(!resultObj.parent)
+		{
+			var _mirrorIndex:int = flashChild.parent ? flashChild.parent.getChildIndex(flashChild) : -1;
+			var _parent:Sprite = getMirror(flashChild.parent);
+			_parent.addChildAt(resultObj,_mirrorIndex);
+
+			ObjUtil.registerInstance(_parent,resultObj);
+
+			if(converter.isEconomicButton(flashChild as MovieClip) && !(resultObj.parent is FlashLabelButton)) {
+				DecoratorManger.decorate(Decorator_Button,resultObj,true);
+			}
+		}
+		storeInstance(resultObj,flashChild);
+	}
+
+	public function createTextField(flashTextField:flash.text.TextField, childClass:Class):void {
+		var field:flash.text.TextField = flashTextField as flash.text.TextField;
+		var tf:TextFormat = field.defaultTextFormat;
+
+		var resultObj:starling.text.TextField = childClass ? new childClass(field.width, field.height, field.text, tf.font, int(tf.size), uint(tf.color), Boolean(tf.bold)) :
+				new SmartTextField(field.width, field.height, field.text, BITMAP_FONT ? BITMAP_FONT.name : tf.font, int(tf.size), uint(tf.color), Boolean(tf.bold));
+
+		(resultObj as starling.text.TextField).autoScale = true;
+		(resultObj as starling.text.TextField).hAlign = tf.align;
+		(resultObj as starling.text.TextField).vAlign = VAlign.CENTER;
+		resultObj.touchable = false;
+		onChildCreated(flashTextField, resultObj);
+	}
+
+	public function createScale9Image(flashImage:flash.display.DisplayObject, childClass:Class):void {
+	}
+
+	public function createScale3Image(flashImage:flash.display.DisplayObject, childClass:Class, direction:String):void {
+	}
+
+	public function createQuad(flashImage:flash.display.DisplayObject, childClass:Class, color:uint, quadAlpha:Number):void {
+		var resultObj:Quad = new Quad(100,100,color);
+		resultObj.alpha = quadAlpha;
+		onChildCreated(flashImage, resultObj);
+	}
+
+	public function createMovieClip(flashMovieClip:MovieClip, childClass:Class):void {
+	}
+
+	public function createImage(flashImage:flash.display.DisplayObject, childClass:Class):void {
+	}
+
+	public function createButton(flashButton:MovieClip, childClass:Class):void {
+	}
+
 		private static var sharedMirrors:Vector.<FlashDisplay_Mirror> = new <FlashDisplay_Mirror>[];
 		public function getSubtextureByName(name:String,symbolName:String):SubTexture
 		{
@@ -691,7 +724,7 @@ import utils.log;
 			}
 			if(visible && mirror && !_descriptor.created)
 			{
-				converter.convert(mirror,convertDescriptor,this,AdvancedSprite.coordinateSystemRect,Starling.current.profile==Context3DProfile.BASELINE_EXTENDED);
+				converter.convert(mirror,this,AdvancedSprite.coordinateSystemRect,Starling.current.profile==Context3DProfile.BASELINE_EXTENDED);
 				if(converter.isSharingAtlasesRegions() && sharedMirrors.indexOf(this)<0) sharedMirrors.push(this);
 			}
 

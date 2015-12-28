@@ -1,7 +1,6 @@
 package starlingExtensions.flash 
 {
 
-import feathers.controls.Button;
 import feathers.display.Scale3Image;
 import feathers.display.Scale9Image;
 
@@ -18,7 +17,6 @@ import flash.display.Shape;
 import flash.display.SimpleButton;
 import flash.display.Sprite;
 import flash.display3D.Context3DProfile;
-import flash.display3D.textures.Texture;
 import flash.geom.Rectangle;
 import flash.system.Capabilities;
 import flash.text.TextField;
@@ -43,7 +41,6 @@ import haxePort.starlingExtensions.flash.movieclipConverter.MirrorDescriptor;
 import haxePort.starlingExtensions.flash.textureAtlas.ITextureAtlasDynamic;
 import haxePort.starlingExtensions.flash.textureAtlas.SubtextureRegion;
 import haxePort.starlingExtensions.flash.textureAtlas.TextureAtlasAbstract;
-import haxePort.utils.ObjUtil;
 
 import managers.ObjPool;
 import managers.resourceManager.IResource;
@@ -64,7 +61,6 @@ import starling.textures.ConcreteTexture;
 import starling.textures.SubTexture;
 import starling.textures.Texture;
 import starling.utils.VAlign;
-import starling.utils.deg2rad;
 
 import starlingExtensions.abstract.IOptimizedDisplayObject;
 import starlingExtensions.batch.TextFieldBatch;
@@ -391,7 +387,7 @@ import utils.log;
 			
 			if ((downT && upT && (flashChild is SimpleButton || flashChild is MovieClip)) || ObjUtil.isExtensionOf(childClass,Button))
 			{
-				createButton(flashChild, childClass);
+				createButton(flashChild as MovieClip, childClass);
 			}
 			else if (converter.isMovieClip(flashChild as MovieClip))
 			{
@@ -429,21 +425,12 @@ import utils.log;
 			}
 		}
 
-	private function getSubTexture(flashChild:flash.display.DisplayObject):SubTexture {
+	private function getSubTexture(flashChild:flash.display.DisplayObject):Texture {
 
 		var subTextures:Vector.<SubtextureRegion> = _descriptor.getConf(flashChild) as Vector.<SubtextureRegion>;
 		var subTexture:SubtextureRegion = _descriptor.getConf(flashChild) is SubtextureRegion ? _descriptor.getConf(flashChild) : (subTextures ? subTextures[0] : null);
 
-		var _subtextures:Vector.<Texture> = getSubtextures(subTexture.name,subTexture.symbolName);
-		return _subtextures;
-	}
-
-	private function getSubTexturesByFlashInstance(flashChild:flash.display.DisplayObject):Vector<Texture> {
-
-		var subTextures:Vector.<SubtextureRegion> = _descriptor.getConf(flashChild) as Vector.<SubtextureRegion>;
-		var subTexture:SubtextureRegion = _descriptor.getConf(flashChild) is SubtextureRegion ? _descriptor.getConf(flashChild) : (subTextures ? subTextures[0] : null);
-
-		var t:SubTexture = subTexture ? getSubtextureByName(subTexture.name,subTexture.symbolName) : null;
+		var t:Texture = subTexture ? getSubtextureByName(subTexture.name,subTexture.symbolName) : null;
 
 		t = t ? t : Texture.fromColor(2,2,0xCCCCCC,true,1);
 		var _mirrorType:String = FlashDisplay_Converter.getFlashObjType(flashChild);
@@ -458,11 +445,19 @@ import utils.log;
 		return t;
 	}
 
+	private function getSubTexturesByFlashInstance(flashChild:flash.display.DisplayObject):Vector.<Texture> {
+
+		var subTextures:Vector.<SubtextureRegion> = _descriptor.getConf(flashChild) as Vector.<SubtextureRegion>;
+		var subTexture:SubtextureRegion = _descriptor.getConf(flashChild) is SubtextureRegion ? _descriptor.getConf(flashChild) : (subTextures ? subTextures[0] : null);
+		var _subtextures:Vector.<Texture> = getSubtextures(subTexture.name,subTexture.symbolName);
+		return _subtextures;
+	}
+
 	public function onChildCreated(flashChild:flash.display.DisplayObject, resultObj:starling.display.DisplayObject) {
 		if(!resultObj.parent)
 		{
 			var _mirrorIndex:int = flashChild.parent ? flashChild.parent.getChildIndex(flashChild) : -1;
-			var _parent:Sprite = getMirror(flashChild.parent);
+			var _parent:starling.display.DisplayObjectContainer = getMirror(flashChild.parent);
 			_parent.addChildAt(resultObj,_mirrorIndex);
 
 			ObjUtil.registerInstance(_parent,resultObj);
@@ -489,13 +484,13 @@ import utils.log;
 	}
 
 	public function createScale9Image(flashImage:flash.display.DisplayObject, childClass:Class):void {
-		var t:SubTexture = getSubTexture(flashImage);
+		var t:Texture = getSubTexture(flashImage);
 		var resultObj:SmartScale9Image = new SmartScale9Image(TextureUtils.scale9Textures(t));
 		onChildCreated(flashImage, resultObj);
 	}
 
 	public function createScale3Image(flashImage:flash.display.DisplayObject, childClass:Class, direction:String):void {
-		var t:SubTexture = getSubTexture(flashImage);
+		var t:Texture = getSubTexture(flashImage);
 		var resultObj:SmartScale3Image = new SmartScale3Image(TextureUtils.scale3Textures(t,direction));
 		onChildCreated(flashImage, resultObj);
 	}
@@ -512,7 +507,7 @@ import utils.log;
 
 		var _subtextures:Vector.<Texture> = getSubTexturesByFlashInstance(flashMovieClip);
 		var _fps:Number = FlashDisplay_Converter.getFlashObjField(flashMovieClip, ConvertUtils.FIELD_FPS, fps);
-		var resultObj:MovieClip = childClass ? new childClass(_subtextures,_fps,flashMovieClip,this,subTextures) :
+		var resultObj:starling.display.MovieClip = childClass ? new childClass(_subtextures,_fps,flashMovieClip,this,subTextures) :
 				new FlashMovieClip_Mirror(_subtextures,_fps,flashMovieClip,this,subTextures);
 
 		(resultObj as FlashMovieClip_Mirror).textureRegionScale = subTexture.parent.atlasRegionScale;
@@ -521,7 +516,7 @@ import utils.log;
 
 	public function createImage(flashImage:flash.display.DisplayObject, childClass:Class):void {
 		childClass = ObjUtil.isExtensionOf(childClass,Image) ? childClass : SmartImage;
-		var t:SubTexture = getSubTexture(flashImage);
+		var t:Texture = getSubTexture(flashImage);
 		var resultObj:Image = new childClass(t);
 		(resultObj as Image).readjustSize();
 		onChildCreated(flashImage, resultObj);
@@ -531,8 +526,8 @@ import utils.log;
 
 		var downSubtext:SubtextureRegion;
 		var upSubtext:SubtextureRegion;
-		var subTextures:Vector.<SubtextureRegion> = _descriptor.getConf(flashChild) as Vector.<SubtextureRegion>;
-		var subTexture:SubtextureRegion = _descriptor.getConf(flashChild) is SubtextureRegion ? _descriptor.getConf(flashChild) : (subTextures ? subTextures[0] : null);
+		var subTextures:Vector.<SubtextureRegion> = _descriptor.getConf(flashButton) as Vector.<SubtextureRegion>;
+		var subTexture:SubtextureRegion = _descriptor.getConf(flashButton) is SubtextureRegion ? _descriptor.getConf(flashButton) : (subTextures ? subTextures[0] : null);
 
 		// checking if subTextures frameLabels matches to an button
 		if (subTextures && subTextures.length == 2)
@@ -634,7 +629,7 @@ import utils.log;
 			
 			instance.name = _mirror.name; 
 			
-			var isSimpleSprite:Boolean = instance is Sprite && !(instance is Scale3Image) && !(instance is Scale9Image);
+			var isSimpleSprite:Boolean = instance is starling.display.Sprite && !(instance is Scale3Image) && !(instance is Scale9Image);
 						
 			instance.x = Math.round(isSimpleSprite ? _mirror.x : mirrorRect.x);   
 			instance.y = Math.round(isSimpleSprite ? _mirror.y : mirrorRect.y);
@@ -664,7 +659,7 @@ import utils.log;
 				
 				instance.scaleX = _mirror[ConvertUtils.FIELD_DEFAULT_SCALEX] ? _mirror[ConvertUtils.FIELD_DEFAULT_SCALEX] : _mirror.scaleX; 
 				instance.scaleY = _mirror[ConvertUtils.FIELD_DEFAULT_SCALEY] ? _mirror[ConvertUtils.FIELD_DEFAULT_SCALEY] : _mirror.scaleY;
-				instance.touchable = (_mirror as flash.display.Sprite).mouseEnabled;
+				instance.touchable = (_mirror as flash.display.DisplayObjectContainer).mouseEnabled;
 			}
 			else
 			{

@@ -369,7 +369,6 @@ import utils.log;
 
 			var subTextures:Vector.<SubtextureRegion> = _descriptor.getConf(flashChild) as Vector.<SubtextureRegion>;
 			var subTexture:SubtextureRegion = _descriptor.getConf(flashChild) is SubtextureRegion ? _descriptor.getConf(flashChild) : (subTextures ? subTextures[0] : null);
-			var atlas:TextureAtlasAbstract=null;
 
 			// checking if subTextures frameLabels matches to an button
 			if (subTextures && subTextures.length == 2)
@@ -396,8 +395,7 @@ import utils.log;
 				resultObj = childClass ? new childClass(_subtextures,_fps,flashChild as MovieClip,this,subTextures) :
 					new FlashMovieClip_Mirror(_subtextures,_fps,flashChild as MovieClip,this,subTextures);
 
-				if(!atlas) atlas = subTexture.parent;
-				(resultObj as FlashMovieClip_Mirror).textureRegionScale = atlas.atlasRegionScale;
+				(resultObj as FlashMovieClip_Mirror).textureRegionScale = subTexture.parent.atlasRegionScale;
 			}
 			else if (flashChild is flash.text.TextField)
 			{

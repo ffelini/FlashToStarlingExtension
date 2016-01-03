@@ -36,6 +36,7 @@ import haxePort.starlingExtensions.flash.movieclipConverter.FlashDisplay_Convert
 import haxePort.starlingExtensions.flash.movieclipConverter.FlashDisplay_Converter;
 import haxePort.starlingExtensions.flash.movieclipConverter.IFlashMirror;
 import haxePort.starlingExtensions.flash.movieclipConverter.IFlashMirrorRoot;
+import haxePort.starlingExtensions.flash.movieclipConverter.IFlashMirrorRoot;
 import haxePort.starlingExtensions.flash.movieclipConverter.IFlashSpriteMirror;
 import haxePort.starlingExtensions.flash.movieclipConverter.MirrorDescriptor;
 import haxePort.starlingExtensions.flash.textureAtlas.ITextureAtlasDynamic;
@@ -168,7 +169,10 @@ import utils.log;
 		public var redrawTextures:Boolean = true;
 		
 		public var disposeMirrorBitmaps:Boolean = true;  
-		public var clearShapes:Boolean = true;  
+		public var clearShapes:Boolean = true;
+	
+		private var _childrenCreated = false;
+		private var _active = false;
 		/**
 		 * this value will be multiplied to the mirror size. Increase it to get better quality 
 		 */		
@@ -256,7 +260,7 @@ import utils.log;
 		public function storeInstance(instance:*, _mirror:flash.display.DisplayObject,mirrorRect:Rectangle=null):void
 		{
 			//restoreMirror(_mirror);
-			if(_descriptor.created) return;
+			if(_childrenCreated) return;
 			
 			registerMirror(instance,_mirror);
 			setupByMirror(instance as starling.display.DisplayObject, _mirror,false,mirrorRect);
@@ -356,18 +360,16 @@ import utils.log;
 		public function onChildrenCreationComplete():void
 		{
 			var t:Number = getTimer();
-			if(autoUpdateLayoutData && !defaultState.created) updateLayoutData();
+			if(autoUpdateLayoutData) updateLayoutData();
 			log(this,"updateLayoutData duration-"+(getTimer() - t));
 
-			if(!_descriptor.created) batchTextFields = _batchTextFields;
-			_descriptor.created = true;
+			batchTextFields = _batchTextFields;
+			_childrenCreated = true;
 		}
 		public function createChild(flashChild:flash.display.DisplayObject, childClass:Class):void
 		{
-			var resultObj:starling.display.DisplayObject;
 			var downSubtext:SubtextureRegion;
 			var upSubtext:SubtextureRegion;
-			var t:Texture;
 			var downT:Texture;
 			var upT:Texture;
 
@@ -381,7 +383,6 @@ import utils.log;
 				upSubtext = subTexture.frameLabel == ConvertUtils.BUTTON_KEYFRAME_UP ? subTexture : (subTextures[1].frameLabel == ConvertUtils.BUTTON_KEYFRAME_UP ? subTextures[1] : null);
 			}
 
-			t = subTexture ? getSubtextureByName(subTexture.name,subTexture.symbolName) : null;
 			downT = downSubtext ? getSubtextureByName(downSubtext.name,downSubtext.symbolName) : null;
 			upT = upSubtext ? getSubtextureByName(upSubtext.name,upSubtext.symbolName) : null;
 			
@@ -502,6 +503,10 @@ import utils.log;
 	}
 
 	public function createMovieClip(flashMovieClip:MovieClip, childClass:Class):void {
+		if(ObjUtil.isExtensionOf(childClass, Button)) {
+			createButton(flashMovieClip, childClass);
+			return;
+		}
 		var subTextures:Vector.<SubtextureRegion> = _descriptor.getConf(flashMovieClip) as Vector.<SubtextureRegion>;
 		var subTexture:SubtextureRegion = _descriptor.getConf(flashMovieClip) is SubtextureRegion ? _descriptor.getConf(flashMovieClip) : (subTextures ? subTextures[0] : null);
 
@@ -754,15 +759,13 @@ import utils.log;
 				setupMirror();
 				
 				log(this,"after setupMirror",Memory.privateMemory,Memory.totalMemory);
-								
-				if(mirror && !_descriptor) setState(mirror);
 			}
 			if(!mirror)
 			{
 				super.visible = false;
 				return;
 			}
-			if(visible && mirror && !_descriptor.created)
+			if(visible && mirror && !_childrenCreated)
 			{
 				converter.convert(mirror,this,AdvancedSprite.coordinateSystemRect,Starling.current.profile==Context3DProfile.BASELINE_EXTENDED);
 				if(converter.isSharingAtlasesRegions() && sharedMirrors.indexOf(this)<0) sharedMirrors.push(this);
@@ -789,12 +792,12 @@ import utils.log;
 		 */		
 		public function activate(_active:Boolean):void
 		{			
-			if(!_descriptor || !_descriptor.created || _descriptor.active==_active) return;
+			if(!_descriptor || !_childrenCreated || this._active==_active) return;
 			
 			// first atlases activation is ignored as they are already active after convertion
 			if(requireActivationControl) activateAtlases(_active);
 			
-			_descriptor.active = _active;
+			this._active = _active;
 			
 			activateJuggler(_active);
 			
@@ -872,13 +875,13 @@ import utils.log;
 		}
 		public function get active():Boolean
 		{
-			return _descriptor ? _descriptor.active : false;
+			return _active;
 		}
 		public function get created():Boolean
 		{
-			return _descriptor ? _descriptor.created : false;
+			return _childrenCreated;
 		}
-		protected var _descriptor:MirrorDescriptor;
+		protected var _descriptor:MirrorDescriptor = new MirrorDescriptor();
 		public function get_descriptor():MirrorDescriptor
 		{
 			return _descriptor;
@@ -886,27 +889,6 @@ import utils.log;
 		public function get descriptor():MirrorDescriptor
 		{
 			return _descriptor;
-		}
-		public var defaultState:MirrorDescriptor;
-		private var states:Dictionary = new Dictionary();
-		public function setState(key:*):void
-		{
-			if(_descriptor && _descriptor==states[key+""]) return;
-			
-			if(_descriptor && _descriptor.created)
-			{
-				_descriptor.clear();
-				activate(false);
-			}
-			_descriptor = states[key+""];
-			
-			if(!_descriptor)
-			{
-				_descriptor = new MirrorDescriptor();
-				_descriptor.key = key;
-				states[key+""] = _descriptor;
-			}
-			if(!defaultState) defaultState = _descriptor;
 		}
 		public function adChildAt(child:*, index:int):void
 		{

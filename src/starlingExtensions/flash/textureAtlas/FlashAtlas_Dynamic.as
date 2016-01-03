@@ -169,9 +169,13 @@ import starlingExtensions.utils.DisplayUtils;
 
 			return subTexture;
 		}
-		override public function getSubtexture(name:String,region:Rectangle=null, frame:Rectangle=null,extrusionFactor:Number=100):*
+		public function getSubtexture(name:String,region:Rectangle=null, frame:Rectangle=null,extrusionFactor:Number=100):*
 		{
-			var t:Texture = super.getSubtexture(name,region,frame,extrusionFactor) as Texture;
+			var t:Texture;
+			if (descriptor.atlas != null) {
+				if (region != null || frame != null || extrusionFactor < 100) t = descriptor.atlas.getExtrudedTexture(name, region, frame, extrusionFactor);
+				else t = descriptor.atlas.getTextureObjByName(name);
+			}
 			if(!t)
 			{
 				subTextures = getSubtextures(name,subTextures) as Vector.<Texture>;
@@ -179,9 +183,9 @@ import starlingExtensions.utils.DisplayUtils;
 			}
 			return t;
 		}
-		override public function getSubtextures(name:String, result:*):*
+		public function getSubtextures(name:String, result:*):*
 		{
-			return super.getSubtextures(name, result);
+			return descriptor.atlas != null ? descriptor.atlas.getTexturesObj(name, result) : null;
 		}
 		public function getSubtexturesForObj(obj:DisplayObject, result:Object=null):Object
 		{

@@ -81,6 +81,8 @@ import starlingExtensions.uiComponents.SmartImage;
 import starlingExtensions.uiComponents.SmartTextField;
 import starlingExtensions.utils.deg2rad;
 
+import test.TextureAtlasDynamic;
+
 import utils.Memory;
 import utils.ObjUtil;
 import utils.log;
@@ -320,22 +322,22 @@ import utils.log;
 		public function storeAtlas(atlas:ITextureAtlasDynamic, bmd:BitmapData):void
 		{			
 			handleLostContext(atlas as TextureAtlas_Dynamic,true);
-			
+
 			if(bmd)
 			{
-				if(redrawTextures) 
+				if(redrawTextures)
 				{
 					ObjUtil.dispose(bmd);
 					bmd = null;
 				}
-				else if(!autoTextureBmdCompressToByteArray) namespaceFlashConverter::atlasesAndBmd[atlas] = bmd; 
+				else if(!autoTextureBmdCompressToByteArray) namespaceFlashConverter::atlasesAndBmd[atlas] = bmd;
 				else
 				{
 					var ba:ByteArray = bmd.getPixels(bmd.rect);
 					ba.compress();
 					namespaceFlashConverter::atlasesAndBmd[atlas] = ba;
 					namespaceFlashConverter::atlasesAndBmd[ba] = bmd.rect;
-					
+
 					ObjUtil.dispose(bmd);
 					bmd = null;
 				}
@@ -427,11 +429,14 @@ import utils.log;
 		}
 
 	private function getSubTexture(flashChild:flash.display.DisplayObject):Texture {
-
 		var subTextures:Vector.<SubtextureRegion> = _descriptor.getConf(flashChild) as Vector.<SubtextureRegion>;
 		var subTexture:SubtextureRegion = _descriptor.getConf(flashChild) is SubtextureRegion ? _descriptor.getConf(flashChild) : (subTextures ? subTextures[0] : null);
 
 		var t:Texture = subTexture ? getSubtextureByName(subTexture.name,subTexture.symbolName) : null;
+
+		if(converter.debug) {
+			log(this, "getSubTexture", flashChild, "subTexture.name - " + subTexture.name, "subTexture.symbolName - " + subTexture.symbolName, "t - " + t);
+		}
 
 		t = t ? t : Texture.fromColor(2,2,0xCCCCCC,true,1);
 		var _mirrorType:String = FlashDisplay_Converter.getFlashObjType(flashChild);
@@ -555,7 +560,7 @@ import utils.log;
 		private static var sharedMirrors:Vector.<FlashDisplay_Mirror> = new <FlashDisplay_Mirror>[];
 		public function getSubtextureByName(name:String,symbolName:String):SubTexture
 		{
-			var st:SubTexture = _descriptor.getConf(name+"_subtextures") as SubTexture;
+			var st:SubTexture = _descriptor.getConf(name+"_subtexture") as SubTexture;
 			if(st) return st;
 			
 			for each(var atlas:TextureAtlas_Dynamic in _descriptor.textureAtlases)
@@ -563,7 +568,7 @@ import utils.log;
 				st = atlas.getTexture(name) as SubTexture; 
 				if(st)
 				{
-					_descriptor.setConf(name+"_subtextures",st);
+					_descriptor.setConf(name+"_subtexture",st);
 					_descriptor.setConf(st,atlas);
 					return st;
 				}
@@ -572,7 +577,7 @@ import utils.log;
 				for each(var mirror:FlashDisplay_Mirror in sharedMirrors) {
 					st = mirror.getSubtextureByName(name, symbolName);
 					if(st) {
-						_descriptor.setConf(name+"_subtextures",st);
+						_descriptor.setConf(name+"_subtexture",st);
 						_descriptor.setConf(st,atlas);
 						return st;
 					}
@@ -767,13 +772,18 @@ import utils.log;
 			}
 			if(visible && mirror && !_childrenCreated)
 			{
-				converter.convert(mirror,this,AdvancedSprite.coordinateSystemRect,Starling.current.profile==Context3DProfile.BASELINE_EXTENDED);
-				if(converter.isSharingAtlasesRegions() && sharedMirrors.indexOf(this)<0) sharedMirrors.push(this);
+				convertFlashMirror();
 			}
 
 			if(creationRenderCounter>1) activate(visible); 
 			
 			touchable = visible;
+		}
+
+		private function convertFlashMirror() {
+			TextureAtlas_Dynamic.debug = converter.debug;
+			converter.convert(mirror,this,AdvancedSprite.coordinateSystemRect,Starling.current.profile==Context3DProfile.BASELINE_EXTENDED);
+			if(converter.isSharingAtlasesRegions() && sharedMirrors.indexOf(this)<0) sharedMirrors.push(this);
 		}
 		public function activateJuggler(_activate:Boolean):void
 		{

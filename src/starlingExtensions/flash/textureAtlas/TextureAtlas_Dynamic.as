@@ -25,6 +25,8 @@ import starlingExtensions.atf.EncodingOptions;
 import utils.log;
 
 public class TextureAtlas_Dynamic extends TextureAtlas implements ITextureAtlasDynamic {
+    public static var debug:Boolean = false;
+
     public function TextureAtlas_Dynamic(texture:Texture, atlas:Object = null) {
         refreshConcretTexture(texture);
         super(concretTexture, atlas as XML);
@@ -97,6 +99,10 @@ public class TextureAtlas_Dynamic extends TextureAtlas implements ITextureAtlasD
             tInfo.rotated = rotated;
         }
         mTextureInfos[_atlas][name] = tInfo;
+
+        if(debug) {
+            log(this, "addRegion", "name - " + name, "region - " + region, "frame - " + frame);
+        }
     }
 
     public function getTextureObjByName(name:String):* {
@@ -318,7 +324,7 @@ public class TextureAtlas_Dynamic extends TextureAtlas implements ITextureAtlasD
 
         var t:Texture = encodeToAtf ? getAtfTexture(atlasBmd, scale) : Texture.fromBitmapData(atlasBmd, useMipMaps, false, scale);
 
-        log(TextureAtlas_Dynamic, "getAtlasTexture", "encodeToAtf-" + encodeToAtf, atlasBmd.rect, "DURATION-" + (getTimer() - time));
+        if(debug) log(TextureAtlas_Dynamic, "getAtlasTexture", "encodeToAtf - " + encodeToAtf, "rect - " + atlasBmd.rect, "DURATION-" + (getTimer() - time));
 
         return t;
     }

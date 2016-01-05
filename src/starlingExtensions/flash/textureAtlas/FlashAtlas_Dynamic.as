@@ -15,6 +15,7 @@ import haxePort.starlingExtensions.flash.movieclipConverter.AtlasDescriptor;
 import haxePort.starlingExtensions.flash.movieclipConverter.FlashAtlas;
 import haxePort.starlingExtensions.flash.textureAtlas.ITextureAtlasDynamic;
 import haxePort.starlingExtensions.flash.textureAtlas.SubtextureRegion;
+import haxePort.starlingExtensions.flash.textureAtlas.TextureAtlasAbstract;
 
 import managers.Handlers;
 
@@ -34,20 +35,38 @@ import starlingExtensions.utils.DisplayUtils;
 	{
 		private var _isFull:Boolean = false;
 
+		private var helpTexture:Texture;
 		private var maxSize:Number = 1024;
 		public var onFullHandler:Function;
 
 		public function FlashAtlas_Dynamic()
 		{
-			FlashAtlas.textureFromBmdFunc = TextureUtils.textureFromBmd;
-			FlashAtlas.getAtlasFunc = TextureUtils.getAtlas;
-			FlashAtlas.helpTexture =  Texture.fromColor(2,2);
-			FlashAtlas.saveAtlasPngFunc = TextureUtils.saveAtlasPng;
-
+			helpTexture =  Texture.fromColor(2,2);
 			super();
 
 			resetDescriptor();
 			//debug = debugAtlas = true;
+		}
+
+		override public function resetDescriptor():AtlasDescriptor {
+			descriptor.smartSizeIncrease = false;
+			descriptor.atlas = getAtlas(descriptor.atlasAbstract);
+			return descriptor;
+		}
+
+		public function createTextureAtlasDynamic(atlas:TextureAtlasAbstract, atlasBmd:BitmapData):TextureAtlas_Dynamic
+		{
+			var t:ConcreteTexture_Dynamic = TextureUtils.textureFromBmd(atlasBmd, atlas.atlasRegionScale);
+			return TextureUtils.getAtlas(t, atlas);
+		}
+
+		public function saveAtlasPng(path:String,atlasBmd:BitmapData):void
+		{
+			TextureUtils.saveAtlasPng(path, atlasBmd);
+		}
+
+		override public function get convertDescriptor():ConvertDescriptor {
+			return converter.convertDescriptor as ConvertDescriptor;
 		}
 
 		override public function getMaximumWidth():int {
@@ -58,16 +77,11 @@ import starlingExtensions.utils.DisplayUtils;
 			return maxSize;
 		}
 
-		override public function resetDescriptor():AtlasDescriptor
-		{
-			super.resetDescriptor();
-			descriptor.smartSizeIncrease = false;
-            return descriptor;
-		}
 		override public function checkSubtexture(obj:DisplayObject, name:String="",descriptors:Array = null):AtlasDescriptor
 		{
 			return null;
 		}
+
 		override public function addSubTexture(descriptor:AtlasDescriptor,obj:DisplayObject, name:String="",onAtlasIsFullCall:Boolean = true):SubtextureRegion
 		{
 			var subTexture:SubtextureRegion = super.addSubTexture(descriptor, obj, name);
@@ -99,7 +113,7 @@ import starlingExtensions.utils.DisplayUtils;
 
 			return bmd;
 		}
-		override public function createTextureAtlass(descriptor:AtlasDescriptor):haxePort.starlingExtensions.flash.textureAtlas.ITextureAtlasDynamic
+		override public function createTextureAtlas(descriptor:AtlasDescriptor):haxePort.starlingExtensions.flash.textureAtlas.ITextureAtlasDynamic
 		{
 			if (width == 0 || height == 0) return null;
 

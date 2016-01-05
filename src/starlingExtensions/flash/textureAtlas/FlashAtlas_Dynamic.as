@@ -1,6 +1,7 @@
 package starlingExtensions.flash.textureAtlas
 {
 import feathersExtensions.utils.TextureUtils;
+import feathersExtensions.utils.TextureUtils;
 
 import flash.display.Bitmap;
 import flash.display.BitmapData;
@@ -23,6 +24,8 @@ import starling.textures.Texture;
 import starling.utils.RectangleUtil;
 import starling.utils.ScaleMode;
 
+import starlingExtensions.textureutils.Textures;
+
 import starlingExtensions.utils.DisplayUtils;
 
 /**
@@ -41,32 +44,29 @@ import starlingExtensions.utils.DisplayUtils;
 
 		public function FlashAtlas_Dynamic()
 		{
-			helpTexture =  Texture.fromColor(2,2);
 			super();
 
 			resetDescriptor();
-			//debug = debugAtlas = true;
+			debug = debugAtlas = true;
 		}
 
 		override public function resetDescriptor():AtlasDescriptor {
+			descriptor = super.resetDescriptor();
 			descriptor.smartSizeIncrease = false;
-			descriptor.atlas = getAtlas(descriptor.atlasAbstract);
+			helpTexture =  Texture.fromColor(2,2);
+			descriptor.atlas = TextureUtils.getAtlas(helpTexture, descriptor.atlasAbstract);
 			return descriptor;
 		}
 
-		public function createTextureAtlasDynamic(atlas:TextureAtlasAbstract, atlasBmd:BitmapData):TextureAtlas_Dynamic
+		override public function createTextureAtlasDynamic(atlas:TextureAtlasAbstract, atlasBmd:BitmapData):ITextureAtlasDynamic
 		{
 			var t:ConcreteTexture_Dynamic = TextureUtils.textureFromBmd(atlasBmd, atlas.atlasRegionScale);
 			return TextureUtils.getAtlas(t, atlas);
 		}
 
-		public function saveAtlasPng(path:String,atlasBmd:BitmapData):void
+		override public function saveAtlasPng(path:String,atlasBmd:BitmapData):void
 		{
 			TextureUtils.saveAtlasPng(path, atlasBmd);
-		}
-
-		override public function get convertDescriptor():ConvertDescriptor {
-			return converter.convertDescriptor as ConvertDescriptor;
 		}
 
 		override public function getMaximumWidth():int {
@@ -103,7 +103,7 @@ import starlingExtensions.utils.DisplayUtils;
 			var t:Number = getTimer();
 			if(forceUpdating || !descriptor.atlas || t - lastUpdateAtlas > autoUpdateDelay)
 			{
-				createTextureAtlass(descriptor);
+				createTextureAtlas(descriptor);
 				lastUpdateAtlas = t;
 			}
 		}
@@ -117,25 +117,17 @@ import starlingExtensions.utils.DisplayUtils;
 		{
 			if (width == 0 || height == 0) return null;
 
-			if((descriptor.atlas as TextureAtlas_Dynamic).textureSource==helpTexture)
-			{
-                descriptor.atlas = super.createTextureAtlass(descriptor);
-				(descriptor.atlas as TextureAtlas_Dynamic).concretTexture.onRestore = function():void
-				{
-					updateAtlas(true);
-				}
-			}
-			else
-			{
-				atlasBmd = drawAtlas(descriptor, descriptor.maxRect);
-                descriptor.atlas.updateBitmapData(atlasBmd);
-
-				atlasBmd.dispose();
-				atlasBmd = null;
-			}
+			atlasBmd = drawAtlas(descriptor, descriptor.maxRect);
+			descriptor.atlas.updateBitmapData(atlasBmd);
+			(descriptor.atlas as TextureAtlas_Dynamic).concretTexture.onRestore = restoreAtlas;
+			atlasBmd.dispose();
+			atlasBmd = null;
 			requireUpdate = false;
 
 			return descriptor.atlas;
+		}
+		private function restoreAtlas():void {
+			updateAtlas(true);
 		}
 		public var requireUpdate:Boolean = false;
 		/**

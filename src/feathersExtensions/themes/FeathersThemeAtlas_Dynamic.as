@@ -31,7 +31,7 @@ public class FeathersThemeAtlas_Dynamic extends FlashAtlas_Dynamic
 			{
 				addFlashContainer(doc,includeAllMovieClipFrames);
 			}
-			textureAtlas.updateAtlas(textureAtlas.get_atlas(),true);
+			textureAtlas.updateAtlas(textureAtlas.get_atlas());
 			
 			autoUpdateAtlas = _updateAtlas;
 			autoUpdateDelay = _autoUpdateDelay;
@@ -50,7 +50,7 @@ public class FeathersThemeAtlas_Dynamic extends FlashAtlas_Dynamic
 		}
 		public function get textureAtlas():TextureAtlas_Dynamic
 		{
-			return descriptor.atlas ? descriptor.atlas as TextureAtlas_Dynamic : getAtlas(descriptor) as TextureAtlas_Dynamic;
+			return descriptor.atlas as TextureAtlas_Dynamic;
 		}
 	}
 }

@@ -36,9 +36,9 @@ public class TextureUtils
 			var rect:Rectangle = new Rectangle(texture.width/4,texture.width/4,texture.width/4,texture.width/4);
 			return new Scale9Textures(texture,rect);
 		}
-		public static function getAtlas(helpTexture:Texture,atlas:TextureAtlasAbstract):TextureAtlas_Dynamic
+		public static function getAtlas(texture:Texture,atlas:TextureAtlasAbstract):TextureAtlas_Dynamic
 		{
-			return new TextureAtlas_Dynamic(helpTexture,atlas);
+			return new TextureAtlas_Dynamic(texture,atlas);
 		}
 		public static function textureFromBmd(atlasBmd:BitmapData,textureScale:Number,onRestore:Function=null):ConcreteTexture_Dynamic
 		{

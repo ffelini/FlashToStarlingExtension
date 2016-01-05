@@ -1,12 +1,5 @@
 package starlingExtensions.flash 
 {
-
-import FlashAtlas.helpTexture;
-import FlashAtlas.helpTexture;
-import FlashAtlas.helpTexture;
-import FlashAtlas.helpTexture;
-
-import feathers.controls.Button;
 import feathers.display.Scale3Image;
 import feathers.display.Scale9Image;
 
@@ -48,7 +41,6 @@ import haxePort.starlingExtensions.flash.movieclipConverter.MirrorDescriptor;
 import haxePort.starlingExtensions.flash.textureAtlas.ITextureAtlasDynamic;
 import haxePort.starlingExtensions.flash.textureAtlas.SubtextureRegion;
 import haxePort.starlingExtensions.flash.textureAtlas.TextureAtlasAbstract;
-import haxePort.utils.ObjUtil;
 
 import managers.ObjPool;
 import managers.resourceManager.IResource;
@@ -81,7 +73,6 @@ import starlingExtensions.flash.animation.SmartJuggler;
 import starlingExtensions.flash.movieclipConverter.ConvertDescriptor;
 import starlingExtensions.flash.textureAtlas.ConcreteTexture_Dynamic;
 import starlingExtensions.flash.textureAtlas.TextureAtlas_Dynamic;
-import starlingExtensions.flash.textureAtlas.TextureAtlas_Dynamic;
 import starlingExtensions.interfaces.IActivable;
 import starlingExtensions.interfaces.IJugglerAnimator;
 import starlingExtensions.namespaceFlashConverter;
@@ -89,8 +80,6 @@ import starlingExtensions.uiComponents.FlashLabelButton;
 import starlingExtensions.uiComponents.SmartImage;
 import starlingExtensions.uiComponents.SmartTextField;
 import starlingExtensions.utils.deg2rad;
-
-import test.TextureAtlasDynamic;
 
 import utils.Memory;
 import utils.ObjUtil;
@@ -238,18 +227,18 @@ import utils.log;
 		public var converter:FlashDisplay_Converter;		
 		protected function setupConverter():void
 		{
-			helpTexture =  Texture.fromColor(2,2);
 			converter = new FlashDisplay_Converter();
 			converter.convertDescriptor = new ConvertDescriptor();
 			if(useSmartScreenQuality) calculateScreenQuality();
 		}
 
-		public function createTextureAtlasDynamic(atlas:TextureAtlasAbstract, atlasBmd:BitmapData):TextureAtlas_Dynamic
+		public function createTextureAtlasDynamic(atlas:TextureAtlasAbstract, atlasBmd:BitmapData):ITextureAtlasDynamic
 		{
 			var texture:ConcreteTexture_Dynamic = TextureUtils.textureFromBmd(atlasBmd, atlas.atlasRegionScale, null);
-			var atlas:TextureAtlas_Dynamic atlas = TextureUtils.getAtlas(texture, atlas);
-			handleLostContext(atlas, true);
-			return atlas;
+			var tAtlas:TextureAtlas_Dynamic = TextureUtils.getAtlas(texture, atlas);
+			handleLostContext(tAtlas, true);
+			storeAtlas(tAtlas, atlasBmd);
+			return tAtlas;
 		}
 
 		public function saveAtlasPng(path:String,atlasBmd:BitmapData):void

@@ -52,33 +52,30 @@ public class StarlingAtlas_Dynamic extends FlashAtlas_Dynamic
 		override public function addSubTexture(descriptor:AtlasDescriptor, obj:flash.display.DisplayObject, name:String="",onAtlasIsFullCall:Boolean = true):SubtextureRegion
 		{
 			var subTexture:SubtextureRegion = super.addSubTexture(descriptor, obj, name);
-			if(subTexture) {
+			if (subTexture) {
 				var objTexture:Texture = prepareRegionTexture(subtextureObj);
 
-				if(objTexture)
-				{
+				if (objTexture) {
 					subtextureStalingObj = new Image(objTexture);
 
 					var subtextureObjRect:Rectangle = subtextureObj.getBounds(this);
-					DisplayUtils.setBounds(subtextureStalingObj,subtextureObjRect);
+					DisplayUtils.setBounds(subtextureStalingObj, subtextureObjRect);
 
 					renderTexture.draw(subtextureStalingObj);
-					if(descriptor.atlas is TextureAtlas_Dynamic) (descriptor.atlas as TextureAtlas_Dynamic).concretTexture.base = renderTexture.base;
+					if (descriptor.atlas is TextureAtlas_Dynamic) (descriptor.atlas as TextureAtlas_Dynamic).concretTexture.base = renderTexture.base;
 
 					starlingRegionsByFlashInstance[subtextureObj] = subtextureStalingObj;
 					starlingAtlas.addChild(subtextureStalingObj);
 
 					objTexture.dispose();
 
-					if(debugAtlas) drawAtlas(descriptor, getAtlasToDrawRect(descriptor));
+					if (debugAtlas) drawAtlas(descriptor, getAtlasToDrawRect(descriptor));
 				}
 			} else {
-				if(subtextureObj.parent==this) subtextureObj.parent.removeChild(subtextureObj);
-				subtextureStalingObj.removeFromParent();
+				if (subtextureObj.parent == this) subtextureObj.parent.removeChild(subtextureObj);
+				if (requireUpdate) updateAtlas(true);
 
-				if(requireUpdate) updateAtlas(true);
-
-				Handlers.functionCall(onFullHandler,obj,name);
+				Handlers.functionCall(onFullHandler, obj, name);
 			}
 			return subTexture;
 		}
@@ -136,10 +133,8 @@ public class StarlingAtlas_Dynamic extends FlashAtlas_Dynamic
 		{
 			//super.updateAtlas(true);
 		}
-		override public function createTextureAtlass(descriptor:AtlasDescriptor):haxePort.starlingExtensions.flash.textureAtlas.ITextureAtlasDynamic
+		override public function createTextureAtlas(descriptor:AtlasDescriptor):haxePort.starlingExtensions.flash.textureAtlas.ITextureAtlasDynamic
 		{
-			//if(atlas.texture==helpTexture) atlas.texture = renderTexture;
-			
 			if(debugAtlas) drawAtlas(descriptor, getAtlasToDrawRect(descriptor));
 			
 			return descriptor.atlas;

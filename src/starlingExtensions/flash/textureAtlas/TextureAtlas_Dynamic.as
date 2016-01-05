@@ -31,7 +31,10 @@ public class TextureAtlas_Dynamic extends TextureAtlas implements ITextureAtlasD
         refreshConcretTexture(texture);
         super(concretTexture, atlas as XML);
 
-        if (atlas is TextureAtlasAbstract) haxeParseAtlas(atlas as TextureAtlasAbstract);
+        if (atlas is TextureAtlasAbstract) {
+            set_atlas(atlas as TextureAtlasAbstract);
+            updateAtlas(atlas as TextureAtlasAbstract);
+        }
     }
 
     private var _atlas:TextureAtlasAbstract;
@@ -71,7 +74,7 @@ public class TextureAtlas_Dynamic extends TextureAtlas implements ITextureAtlasD
 
     protected var subtextures:Dictionary = new Dictionary();
 
-    protected function haxeParseAtlas(atlas:TextureAtlasAbstract):void {
+    public function updateAtlas(atlas:TextureAtlasAbstract):void {
         atlas = atlas;
 
         if (!mTextureInfos[atlas]) {
@@ -222,10 +225,6 @@ public class TextureAtlas_Dynamic extends TextureAtlas implements ITextureAtlasD
         for each(var subTexture:SubTexture in subtextures[_atlas]) {
             if (subTexture) updateSubtextureParent(subTexture, mAtlasTexture);
         }
-    }
-
-    public function updateAtlas(atlas:TextureAtlasAbstract, forceUpdating:Boolean = false):void {
-        haxeParseAtlas(atlas);
     }
 
     /**

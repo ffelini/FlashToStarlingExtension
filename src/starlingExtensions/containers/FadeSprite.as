@@ -44,7 +44,7 @@ public class FadeSprite extends FlashSprite_Mirror
 						}
 					}
 				}
-				else if(!fadeOutComplete);
+				else if(!fadeOutComplete)
 				{
 					if(alpha>0) alpha -= alphaStep;
 					else 

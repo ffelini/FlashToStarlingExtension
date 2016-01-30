@@ -11,7 +11,6 @@ import flash.system.System;
 import managers.DataManager;
 import managers.Handlers;
 import managers.interfaces.IStateReceiver;
-import managers.resourceManager.ManagerRemoteResource;
 
 import mvc.controller.AbstractController;
 import mvc.controller.events.AppMessage;
@@ -28,8 +27,6 @@ import utils.log;
 public class App extends ViewStack implements IPausable
 	{
 		public static var DEBUG:Boolean = Capabilities.isDebugger;
-		
-		public static var resourceManager:ManagerRemoteResource = new ManagerRemoteResource();
 		
 		protected var _controller:AbstractController;
 		
@@ -57,6 +54,7 @@ public class App extends ViewStack implements IPausable
 			
 			Handlers.add(AppMessage,false,onMessage);
 			Handlers.add(TouchUtils.clicked,false,onClicked);
+//			Handlers.add(TouchUtils.onClickSoundPlay, false, ManagerSound.playSound);
 			
 			log(this,"coordinateSystemRect - ",AdvancedSprite.coordinateSystemRect,stage.width,stage.height,Starling.current.nativeStage.stageWidth,Starling.current.nativeStage.stageHeight,
 				Starling.current.nativeStage.width,Starling.current.nativeStage.height,Capabilities.screenResolutionX,Capabilities.screenResolutionY);		

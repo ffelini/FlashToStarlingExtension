@@ -11,8 +11,6 @@ public class FeathersRadioGroup extends AbstractLayoutGroup
 		
 		protected var radios:Array = [];
 		
-		public var labelField
-		
 		public function FeathersRadioGroup()
 		{
 			super();

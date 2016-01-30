@@ -105,7 +105,7 @@ public class IconIR extends SmartIR
 			drawSelection(_isSelected);
 		}
 		public static const defaultSelectionColor:uint = 0x666666;
-		public var selectionColor = defaultSelectionColor;
+		public var selectionColor:uint = defaultSelectionColor;
 		protected function drawSelection(selected:Boolean):void
 		{
 			if(imageIcon) imageIcon.img.color = selected ? selectionColor : 0xFFFFFF;

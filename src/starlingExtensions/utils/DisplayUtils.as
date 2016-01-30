@@ -40,7 +40,7 @@ public class DisplayUtils {
     public function DisplayUtils() {
     }
 
-    public static function debugChildren(container:DisplayObjectContainer, debug_mode:String, debug_alpha = 0.5):void {
+    public static function debugChildren(container:DisplayObjectContainer, debug_mode:String, debug_alpha:Number = 0.5):void {
         if (container) {
             var numChildren:int = container.numChildren;
             for (var i:int = 0; i < numChildren; i++) {
@@ -49,7 +49,7 @@ public class DisplayUtils {
         }
     }
 
-    public static function debugObject(object:DisplayObject, debug_mode:String, debug_alpha = 0.5):void {
+    public static function debugObject(object:DisplayObject, debug_mode:String, debug_alpha:Number = 0.5):void {
         if (object) {
             switch (debug_mode) {
                 case DEBUG_BOUNDS:

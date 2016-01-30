@@ -97,7 +97,7 @@ public class SmartTextField extends TextField implements IClonable
 				input.removeEventListener(Event.CHANGE,onInputChage);
 				removeEventListener(TouchEvent.TOUCH,onFocusTouch);
 			}
-			visible = _isInput ? 0 : 1;
+			visible = _isInput ? false : true;
 		}
 		public function get isInput():Boolean
 		{

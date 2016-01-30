@@ -169,8 +169,8 @@ public class FlashDisplay_Mirror extends AdvancedSprite implements IActivable,IR
     public var disposeMirrorBitmaps:Boolean = true;
     public var clearShapes:Boolean = true;
 
-    private var _childrenCreated = false;
-    private var _active = false;
+    private var _childrenCreated:Boolean = false;
+    private var _active:Boolean = false;
 
     /**
      * this value will be multiplied to the mirror size. Increase it to get better quality
@@ -458,7 +458,7 @@ public class FlashDisplay_Mirror extends AdvancedSprite implements IActivable,IR
         return _subtextures;
     }
 
-    public function onChildCreated(flashChild:flash.display.DisplayObject, resultObj:starling.display.DisplayObject) {
+    public function onChildCreated(flashChild:flash.display.DisplayObject, resultObj:starling.display.DisplayObject):void {
         if (!resultObj.parent) {
             var _mirrorIndex:int = flashChild.parent ? flashChild.parent.getChildIndex(flashChild) : -1;
             var _parent:starling.display.DisplayObjectContainer = getMirror(flashChild.parent);
@@ -769,7 +769,7 @@ public class FlashDisplay_Mirror extends AdvancedSprite implements IActivable,IR
         touchable = visible;
     }
 
-    private function convertFlashMirror() {
+    private function convertFlashMirror():void {
         TextureAtlas_Dynamic.debug = converter.debug;
         registerMirror(this, mirror);
         converter.convert(mirror, this, AdvancedSprite.coordinateSystemRect, Starling.current.profile == Context3DProfile.BASELINE_EXTENDED);

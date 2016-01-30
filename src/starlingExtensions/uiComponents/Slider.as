@@ -41,7 +41,7 @@ public class Slider extends FlashSprite_Mirror
 		override protected function onTouch(e:TouchEvent):void
 		{
 			super.onTouch(e);
-			if(!created || !localBounds);
+			if(!created || !localBounds) return;
 			
 			if(e.getTouch(thumb,TouchPhase.BEGAN)) isDown = true;
 			else

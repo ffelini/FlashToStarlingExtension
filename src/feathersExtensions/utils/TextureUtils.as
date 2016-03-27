@@ -64,8 +64,8 @@ public class TextureUtils
 			log(TextureUtils,"saveAtlasPng-FileStream.openAsync duration-"+(getTimer() - t2));
 			
 			t2 = getTimer();
-			
-			var ba:ByteArray = atlasBmd.encode(atlasBmd.rect,new PNGEncoderOptions(true),ba);
+
+			var ba:ByteArray = atlasBmd.encode(atlasBmd.rect,new PNGEncoderOptions(true));
 			
 			log(TextureUtils,"saveAtlasPng-PNGEncoder.encode duration-"+(getTimer() - t2));
 			

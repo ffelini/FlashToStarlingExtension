@@ -57,8 +57,8 @@ public class FlashAtlas_Dynamic extends FlashAtlas {
         return TextureUtils.getAtlas(t, atlas);
     }
 
-    override public function saveAtlasPng(path:String, atlasBmd:BitmapData):void {
-        TextureUtils.saveAtlasPng(path, atlasBmd);
+    override public function saveAtlasPng(atlas:TextureAtlasAbstract, atlasBmd:BitmapData):void {
+        TextureUtils.saveAtlasPng(atlas.imagePath, atlasBmd);
     }
 
     override public function getMaximumWidth():int {

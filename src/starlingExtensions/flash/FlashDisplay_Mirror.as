@@ -24,8 +24,6 @@ import flash.utils.Dictionary;
 import flash.utils.getQualifiedClassName;
 import flash.utils.getTimer;
 
-import haxePort.interfaces.IActivable;
-
 import haxePort.starlingExtensions.flash.movieclipConverter.AtlasDescriptor;
 
 import haxePort.starlingExtensions.flash.movieclipConverter.ConvertUtils;
@@ -40,6 +38,8 @@ import haxePort.starlingExtensions.flash.movieclipConverter.MirrorDescriptor;
 import haxePort.starlingExtensions.flash.textureAtlas.ITextureAtlasDynamic;
 import haxePort.starlingExtensions.flash.textureAtlas.SubtextureRegion;
 import haxePort.starlingExtensions.flash.textureAtlas.TextureAtlasAbstract;
+
+import managers.Handlers;
 
 import managers.ObjPool;
 import managers.resourceManager.IResource;
@@ -83,7 +83,6 @@ import starlingExtensions.utils.deg2rad;
 import utils.Memory;
 import utils.ObjUtil;
 import utils.log;
-
 /**
  * The basic class that will represent a starling clone of an flash display intance.
  * The point of this class is to allow developers to use FLASH IDE as a graphical editor in the same old way but with GPU accelerated rendering provided by Starling.
@@ -240,8 +239,8 @@ public class FlashDisplay_Mirror extends AdvancedSprite implements IActivable,IR
         return tAtlas;
     }
 
-    public function saveAtlasPng(path:String, atlasBmd:BitmapData):void {
-        TextureUtils.saveAtlasPng(path, atlasBmd);
+    public function saveAtlasPng(atlas:TextureAtlasAbstract, atlasBmd:BitmapData):void {
+        TextureUtils.saveAtlasPng(atlas.imagePath, atlasBmd);
     }
 
     public function get convertDescriptor():ConvertDescriptor {
@@ -597,21 +596,30 @@ public class FlashDisplay_Mirror extends AdvancedSprite implements IActivable,IR
             for each(var t:Texture in _st) {
                 _descriptor.setConf(t, atlas);
             }
-            st = st ? st.concat(_st) : _st;
+            st = st ? st.concat(_st) : _st.concat();
         }
-        _descriptor.setConf(symbolName + "_subtextures", st);
 
         if (st == null || st.length == 0) {
             for each(var mirror:FlashDisplay_Mirror in sharedMirrors) {
-                st = mirror.getSubtextures(name, symbolName);
-                if (st != null && st.length > 0) {
-                    _descriptor.setConf(symbolName + "_subtextures", st);
-                    return st;
-                }
+                _st = mirror.getSubtextures(name, symbolName);
+                st = st ? st.concat(_st) : _st.concat();
             }
         }
+        if(st != null) {
+            st = st.sort(sortSubTextures);
+        }
+
+        log(this, "sortSubTextures name="+name+" symbolName="+symbolName, st.toString().split("SubTexture").join("\nSubTexture"));
+
+        _descriptor.setConf(symbolName + "_subtextures", st);
 
         return st;
+    }
+
+    private function sortSubTextures(subTextureA:SubTexture, subTextureB:SubTexture):Number {
+        var frameA:int = parseInt(subTextureA.name.split("_")[1]);
+        var frameB:int = parseInt(subTextureB.name.split("_")[1]);
+        return frameA > frameB ? 1 : (frameA < frameB ? -1 : 0);
     }
 
     public static function isCreated(instance:starling.display.DisplayObject):Boolean {

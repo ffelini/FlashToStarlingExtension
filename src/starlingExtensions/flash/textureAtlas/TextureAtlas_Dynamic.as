@@ -115,7 +115,7 @@ public class TextureAtlas_Dynamic extends TextureAtlas implements ITextureAtlasD
     private var scaledRegions:Dictionary = new Dictionary();
 
     override public function getTexture(name:String):Texture {
-        var t:Texture = subtextures[_atlas][name];
+        var t:SubTexture = subtextures[_atlas][name];
         if (t) return t;
 
         var tInfo:TextureInfo = mTextureInfos[_atlas] ? mTextureInfos[_atlas][name] : null;
@@ -138,7 +138,7 @@ public class TextureAtlas_Dynamic extends TextureAtlas implements ITextureAtlasD
         }
         if (!region) return null;
 
-        t = Texture.fromTexture(mAtlasTexture, region, frame);
+        t = Texture.fromTexture(mAtlasTexture, region, frame, false, name);
 
         subtextures[_atlas][name] = t;
         subtextures[t] = name;

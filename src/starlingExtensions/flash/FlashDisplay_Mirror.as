@@ -617,8 +617,10 @@ public class FlashDisplay_Mirror extends AdvancedSprite implements IActivable,IR
     }
 
     private function sortSubTextures(subTextureA:SubTexture, subTextureB:SubTexture):Number {
-        var frameA:int = parseInt(subTextureA.name.split("_")[1]);
-        var frameB:int = parseInt(subTextureB.name.split("_")[1]);
+        var subTextureASplit:Array = subTextureA.name.split(ConvertUtils.SUBTEXTURE_NAME_DELIMITER);
+        var frameA:int = parseInt(subTextureASplit[subTextureASplit.length-1]);
+        var subTextureBSplit:Array = subTextureB.name.split(ConvertUtils.SUBTEXTURE_NAME_DELIMITER);
+        var frameB:int = parseInt(subTextureBSplit[subTextureBSplit.length-1]);
         return frameA > frameB ? 1 : (frameA < frameB ? -1 : 0);
     }
 
@@ -902,7 +904,7 @@ public class FlashDisplay_Mirror extends AdvancedSprite implements IActivable,IR
     }
 
     public function getChildAtIndex(index:int):* {
-        return getChildAtIndex(index);
+        return getChildAt(index);
     }
 
     public function numChildrens():int {

@@ -446,6 +446,20 @@ public class DisplayUtils {
     }
 
     [Inline]
+    public static function getScaleForObject(sourceObj:Object, obj:Object, round:Boolean = true):Point {
+        if(!sourceObj || !obj) return null;
+
+        var oldScaleX:Number = sourceObj.scaleX;
+        var oldScaleY:Number = sourceObj.scaleY;
+
+        setBoundsFromObject(sourceObj, obj, round);
+        var result:Point = new Point(sourceObj.scaleX, sourceObj.scaleY);
+        sourceObj.scaleX = oldScaleX;
+        sourceObj.scaleY = oldScaleY;
+        return result;
+    }
+
+    [Inline]
     public static function setBounds(obj:Object, rect:Rectangle, round:Boolean = true):void {
         if (!obj || !rect || rect.isEmpty()) return;
 

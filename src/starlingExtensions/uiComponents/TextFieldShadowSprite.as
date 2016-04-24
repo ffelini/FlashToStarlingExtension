@@ -22,6 +22,11 @@ public class TextFieldShadowSprite extends FlashSprite_Mirror
 			shadowField = getChildAt(0) as TextField;
 			field = getChildAt(1) as TextField;
 		}
+
+		public function set text(value:String) {
+			field.text = value;
+		}
+
 		override public function render(support:RenderSupport, parentAlpha:Number):void
 		{
 			super.render(support, parentAlpha);

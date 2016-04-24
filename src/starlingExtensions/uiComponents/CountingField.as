@@ -16,7 +16,7 @@ public class CountingField extends SmartTextField implements IClonable
 		
 		protected var _step:int = 1;
 		protected var _value:int = 0;
-		protected var _curentValue:Number = 0;
+		protected var _currentValue:Number = 0;
 		protected var _stepDelay:Number = 500;
 		protected var _debug:Boolean = false;
 		public function setValue(value:int,step:int=1,stepDelay:Number=10,maxSteps:int=100,debug:Boolean=false):void
@@ -40,24 +40,24 @@ public class CountingField extends SmartTextField implements IClonable
 		override public function render(support:RenderSupport, parentAlpha:Number):void
 		{
 			super.render(support, parentAlpha); 
-			if(_curentValue==_value) return;
+			if(_currentValue==_value) return;
 			
 			var t:Number = getTimer();
 			
-			if(_debug) trace("CountingField.render(support, parentAlpha)",t,lastChangeTime,_curentValue,_step,(_step>0 && _curentValue<_value) , (_step<0 && _curentValue>_value));
+			if(_debug) trace("CountingField.render(support, parentAlpha)",t,lastChangeTime,_currentValue,_step,(_step>0 && _currentValue<_value) , (_step<0 && _currentValue>_value));
 			
 			if(t-lastChangeTime<_stepDelay || t==lastChangeTime) return;
 			else lastChangeTime = t;
 			
-			if((_step>0 && _curentValue<_value) || (_step<0 && _curentValue>_value))
+			if((_step>0 && _currentValue<_value) || (_step<0 && _currentValue>_value))
 			{
-				_curentValue+=_step;
-				super.text = _curentValue+"";
+				_currentValue+=_step;
+				super.text = _currentValue+"";
 			}
 			else
 			{
 				super.text = _value+"";
-				_curentValue = _value;
+				_currentValue = _value;
 			}
 		}
 		override public function clone():DisplayObject

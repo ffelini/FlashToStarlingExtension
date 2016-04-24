@@ -1,4 +1,5 @@
 package starlingExtensions.utils {
+
 import feathers.display.Scale3Image;
 import feathers.display.Scale9Image;
 
@@ -449,13 +450,17 @@ public class DisplayUtils {
     public static function getScaleForObject(sourceObj:Object, obj:Object, round:Boolean = true):Point {
         if(!sourceObj || !obj) return null;
 
-        var oldScaleX:Number = sourceObj.scaleX;
-        var oldScaleY:Number = sourceObj.scaleY;
+        var oldScaleX:Number = obj.scaleX;
+        var oldScaleY:Number = obj.scaleY;
+        var oldX:Number = obj.x;
+        var oldY:Number = obj.y;
 
         setBoundsFromObject(sourceObj, obj, round);
-        var result:Point = new Point(sourceObj.scaleX, sourceObj.scaleY);
-        sourceObj.scaleX = oldScaleX;
-        sourceObj.scaleY = oldScaleY;
+        var result:Point = new Point(obj.scaleX, obj.scaleY);
+        obj.scaleX = oldScaleX;
+        obj.scaleY = oldScaleY;
+        obj.x = oldX;
+        obj.y = oldY;
         return result;
     }
 

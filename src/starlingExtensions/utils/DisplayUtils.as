@@ -216,6 +216,12 @@ public class DisplayUtils {
     public static var helpRect:Rectangle;
     public static var helpPoint:Point = new Point();
 
+    public static function setPosition(to:Object, from:Object):void {
+        if(!to || !from) return;
+        to.x = from.x;
+        to.y = from.y;
+    }
+
     public static function setGlobalPosition(obj:Object, x:Number, y:Number):void {
         if (!obj) return;
 

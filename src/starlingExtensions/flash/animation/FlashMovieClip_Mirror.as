@@ -3,6 +3,8 @@ import flash.display.MovieClip;
 import flash.geom.Rectangle;
 import flash.utils.getQualifiedClassName;
 
+import haxePort.starlingExtensions.flash.movieclipConverter.ConvertUtils;
+
 import haxePort.starlingExtensions.flash.movieclipConverter.FlashDisplay_Converter;
 import haxePort.starlingExtensions.flash.movieclipConverter.IFlashMirror;
 import haxePort.starlingExtensions.flash.textureAtlas.SubtextureRegion;
@@ -71,7 +73,7 @@ public class FlashMovieClip_Mirror extends starling.display.MovieClip implements
 
         juggler = rootMirror ? rootMirror.juggler : Starling.current.juggler;
 
-        autoPlay = rootMirror && rootMirror.autoPlayMovieClips || FlashDisplay_Converter.getFlashObjField(_mirror, "autoPlay") == true;
+        autoPlay = rootMirror && rootMirror.autoPlayMovieClips || ConvertUtils.getFlashObjField(_mirror, "autoPlay") == true;
         autoPlay = parent && parent is FlashMovieClip && (parent as FlashMovieClip).controlChildMovieClips ? false : autoPlay;
     }
 

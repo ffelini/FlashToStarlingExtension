@@ -25,7 +25,7 @@ import starlingExtensions.uiComponents.FlashLabelButton;
 			
 			if(cl) return cl;
 			
-			var objType:String = FlashDisplay_Converter.getFlashObjType(obj);
+			var objType:String = ConvertUtils.getFlashObjType(obj);
 			
 			switch(objType)
 			{

@@ -138,7 +138,7 @@ public class FlashDisplay_Mirror extends AdvancedSprite implements IActivable,IR
     /**
      * flash mirror instance
      */
-    public var mirror:flash.display.DisplayObject;
+    public var mirror:MovieClip;
     /**
      * flash mirror class instance. If this instance is set and there is no mirror instance then this class will be instantiated.
      */
@@ -362,6 +362,7 @@ public class FlashDisplay_Mirror extends AdvancedSprite implements IActivable,IR
 
     public function onChildrenCreationComplete():void {
         var t:Number = getTimer();
+        mirror.stopAllMovieClips();
         if (autoUpdateLayoutData) updateLayoutData();
         log(this, "updateLayoutData duration-" + (getTimer() - t));
 
@@ -400,18 +401,18 @@ public class FlashDisplay_Mirror extends AdvancedSprite implements IActivable,IR
             createTextField(flashChild as flash.text.TextField, childClass);
         }
         else {
-            var _mirrorType:String = FlashDisplay_Converter.getFlashObjType(flashChild);
+            var _mirrorType:String = ConvertUtils.getFlashObjType(flashChild);
             if (_mirrorType == ConvertUtils.TYPE_SCALE3_IMAGE) {
-                var direction:String = FlashDisplay_Converter.getFlashObjField(flashChild, "direction");
+                var direction:String = ConvertUtils.getFlashObjField(flashChild, "direction");
                 createScale3Image(flashChild, childClass, direction);
             }
             else if (_mirrorType == ConvertUtils.TYPE_SCALE9_IMAGE) {
                 createScale9Image(flashChild, childClass);
             }
             else if (_mirrorType == ConvertUtils.TYPE_QUAD) {
-                var _color:uint = FlashDisplay_Converter.getFlashObjField(flashChild, "color");
+                var _color:uint = ConvertUtils.getFlashObjField(flashChild, "color");
                 if (isNaN(_color)) _color = 0xFFFFFF;
-                var quadAlpha:Number = FlashDisplay_Converter.getFlashObjField(flashChild, "quadAlpha");
+                var quadAlpha:Number = ConvertUtils.getFlashObjField(flashChild, "quadAlpha");
                 if (isNaN(quadAlpha)) quadAlpha = 1;
 
                 createQuad(flashChild, childClass, _color, quadAlpha);
@@ -436,10 +437,10 @@ public class FlashDisplay_Mirror extends AdvancedSprite implements IActivable,IR
         }
 
         t = t ? t : Texture.fromColor(2, 2, 0xCCCCCC, true, 1);
-        var _mirrorType:String = FlashDisplay_Converter.getFlashObjType(flashChild);
+        var _mirrorType:String = ConvertUtils.getFlashObjType(flashChild);
 
         if (_mirrorType == ConvertUtils.TYPE_PRIMITIVE) {
-            var extrusion:Number = FlashDisplay_Converter.getFlashObjField(flashChild, ConvertUtils.FIELD_EXTRUSION_FACTOR);
+            var extrusion:Number = ConvertUtils.getFlashObjField(flashChild, ConvertUtils.FIELD_EXTRUSION_FACTOR);
             extrusion = !isNaN(extrusion) || extrusion < 100 ? extrusion : 100;
             t = TextureAtlas_Dynamic.extrudeTexture(t, null, null, extrusion);
         }
@@ -516,7 +517,7 @@ public class FlashDisplay_Mirror extends AdvancedSprite implements IActivable,IR
         }
 
         var _subtextures:Vector.<Texture> = getSubTexturesByFlashInstance(flashMovieClip);
-        var _fps:Number = FlashDisplay_Converter.getFlashObjField(flashMovieClip, ConvertUtils.FIELD_FPS, fps);
+        var _fps:Number = ConvertUtils.getFlashObjField(flashMovieClip, ConvertUtils.FIELD_FPS, fps);
         var resultObj:starling.display.MovieClip = childClass ? new childClass(_subtextures, _fps, flashMovieClip, this, subTextures) :
                 new FlashMovieClip_Mirror(_subtextures, _fps, flashMovieClip, this, subTextures);
 
@@ -824,6 +825,7 @@ public class FlashDisplay_Mirror extends AdvancedSprite implements IActivable,IR
 
         //if(!autoTextureActivation && !redrawTextures) return;
 
+        mirror.stopAllMovieClips();
         var numAtlases:int = _descriptor.textureAtlases.length;
         for (var i:int = 0; i < numAtlases; i++) {
             activateAtlas(_descriptor.textureAtlases[i] as TextureAtlas_Dynamic, active);

@@ -6,6 +6,8 @@ import flash.display.MovieClip;
 import flash.utils.Dictionary;
 import flash.utils.getQualifiedClassName;
 
+import haxePort.starlingExtensions.flash.movieclipConverter.ConvertUtils;
+
 import haxePort.starlingExtensions.flash.movieclipConverter.FlashDisplay_Converter;
 
 import managers.Handlers;
@@ -51,7 +53,7 @@ import utils.Utils;
 			flashMovieClip = _mirror as flash.display.MovieClip;
 			flashMovieClipClassName = getQualifiedClassName(flashMovieClip);
 			
-			autoPlay = rootMirror.autoPlayMovieClips || FlashDisplay_Converter.getFlashObjField(_mirror,"autoPlay")==true;
+			autoPlay = rootMirror.autoPlayMovieClips || ConvertUtils.getFlashObjField(_mirror,"autoPlay")==true;
 			
 			_juggler = this.juggler ? this.juggler : Starling.current.juggler;
 			
@@ -362,6 +364,7 @@ import utils.Utils;
 		protected var mCurrentTime:Number;
 		protected var mCurrentFrame:int;
 		protected var mLoop:Boolean;
+		protected var frameToStopOnComplete:int = -1;
 		protected var mPlaying:Boolean;
 		
 		private function updateStartTimes():void
@@ -540,8 +543,8 @@ import utils.Utils;
 		/** Indicates if the clip should loop. */
 		public function get loop():Boolean { return mLoop; }
 		public function set loop(value:Boolean):void { mLoop = value; }
-		
-		/** The index of the frame that is currently displayed. */
+
+	/** The index of the frame that is currently displayed. */
 		public function get currentFrame():int { return mCurrentFrame; }
 		public function set currentFrame(value:int):void
 		{
